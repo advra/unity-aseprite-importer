@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEditor.Experimental.AssetImporters;
 using UnityEditor;
+using UnityEngine.Animations;
 
 namespace AsepriteImporter
 {
@@ -12,7 +13,7 @@ namespace AsepriteImporter
 
         private string[] spritePivotOptions = new string[]
         {
-            "Center", "Top Left", "Top", "Top Right", "Left", "Right", "Bottom Left", "Bottom", "Bottom Right", "Custom"
+            "Center", "Top Left", "Top", "Top Right", "Left", "Right", "Bottom Left", "Bottom", "Bottom Right", "ReadFromTag", "ReadFromLayer", "Custom"
         };
 
         private bool customSpritePivot = false;
@@ -89,7 +90,7 @@ namespace AsepriteImporter
                 }
 
                 EditorGUILayout.PropertyField(serializedObject.FindProperty(textureSettings + "extrudeEdges"));
-
+                
                 if (importTypeProperty.intValue == (int) AseFileImportType.Sprite)
                 {
                     PivotPopup("Pivot");
@@ -119,8 +120,8 @@ namespace AsepriteImporter
 
 
             EditorGUILayout.Space();
-
             SerializedProperty animationSettingsArray = serializedObject.FindProperty("animationSettings");
+            EditorGUILayout.PropertyField(serializedObject.FindProperty(textureSettings + "extrudeEdges"));
 
             if (animationSettingsArray != null)
             {
@@ -166,6 +167,7 @@ namespace AsepriteImporter
             {
                 case 0:
                     customSpritePivot = false;
+
                     pivot = new Vector2(0.5f, 0.5f);
                     break;
                 case 1:
@@ -200,6 +202,9 @@ namespace AsepriteImporter
                     customSpritePivot = false;
                     pivot = new Vector2(1f, 0f);
                     break;
+                // read from tag
+                case 9:
+                    break;
                 default:
                     customSpritePivot = true;
                     break;
@@ -222,6 +227,7 @@ namespace AsepriteImporter
         private void DrawAnimationSetting(SerializedProperty animationSettings)
         {
             string animationName = animationSettings.FindPropertyRelative("animationName").stringValue;
+            // AnimationClip animationClip = animationSettings.FindPropertyRelative("animationClip").stringValue;
 
             if (animationName == null)
                 return;
@@ -243,6 +249,25 @@ namespace AsepriteImporter
             {
                 EditorGUILayout.PropertyField(animationSettings.FindPropertyRelative("loopTime"));
                 EditorGUILayout.HelpBox(animationSettings.FindPropertyRelative("about").stringValue, MessageType.None);
+
+                // load each anmation at the path
+                string path = animationSettings.FindPropertyRelative("animationClipPath").stringValue;
+                EditorGUILayout.HelpBox(path+ "/" + animationName, MessageType.None);
+                Debug.Log(path+ "/" + animationName);
+                AnimationClip animationClip = (AnimationClip) AssetDatabase.LoadAssetAtPath(path, typeof(AnimationClip));
+                EditorGUILayout.ObjectField(animationClip, typeof(AnimationClip), false);
+
+                // create animation
+                // AssetDatabase.CreateAsset(animationClip, "Assets/" + animationName);
+
+                // EditorGUILayout.(animationClip, typeof(AnimationClip));
+                // EditorGUILayout.PropertyField();
+                // SerializedProperty animationClipPlayable = serializedObject.FindProperty("animationClipPlayable");
+
+                // AnimationClip animationClip = animationClipPlayable.GetAnimationClip();
+                // EditorGUILayout.PropertyField(animationClipPlayable)
+                // AnimationClipPlayable animationClipPlayable = animationSettings.FindPropertyRelative("animationClipPlayable") as AnimationClipPlayable;
+                
             }
 
             foldoutStyle.fontStyle = prevoiusFontStyle;

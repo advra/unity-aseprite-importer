@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Animations;
 
 namespace AsepriteImporter
 {
@@ -18,10 +19,12 @@ namespace AsepriteImporter
         [SerializeField] public string animationName;
         [SerializeField] public bool loopTime = true;
         [SerializeField] public string about;
+        [SerializeField] public string animationClipPath;
 
         public override string ToString()
         {
             return animationName;
         }
     }
+
 }

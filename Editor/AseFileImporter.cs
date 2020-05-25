@@ -7,6 +7,9 @@ using Aseprite;
 using UnityEditor;
 using Aseprite.Chunks;
 using System.Text;
+using System;
+using UnityEngine.Animations;
+using UnityEngine.Playables;
 
 namespace AsepriteImporter
 {
@@ -31,6 +34,8 @@ namespace AsepriteImporter
         [SerializeField] public Texture2D atlas;
         [SerializeField] public AseFileImportType importType;
         [SerializeField] public AseEditorBindType bindType;
+        // [SerializeField] public Sprite[] sprites;
+        // [SerializeField] public AnimationClip[] animationClips;
 
         public override void OnImportAsset(AssetImportContext ctx)
         {
@@ -48,16 +53,6 @@ namespace AsepriteImporter
                 frames = aseFile.GetLayersAsFrames();
             
             SpriteImportData[] spriteImportData = new SpriteImportData[0];
-
-            //if (textureSettings.transparentMask)
-            //{
-            //    atlas = atlasBuilder.GenerateAtlas(frames, out spriteImportData, textureSettings.transparentColor, false);
-            //}
-            //else
-            //{
-            //    atlas = atlasBuilder.GenerateAtlas(frames, out spriteImportData, false);
-
-            //}
 
             atlas = atlasBuilder.GenerateAtlas(frames, out spriteImportData, textureSettings.transparentMask, false);
 
@@ -168,15 +163,40 @@ namespace AsepriteImporter
 
             int index = 0;
 
-            foreach (var animation in animations)
+            for(int indexAnim = 0; indexAnim < animations.Length; indexAnim ++)
             {
+                FrameTag animation = animations[indexAnim];
+                Console.WriteLine(animation.TagName);
+                if(indexAnim == 0 && animation.TagName.Length != 0)
+                {
+                    if(animation.TagName.Contains("pivot:"))
+                    {
+                        // int pivotX;
+                        // int pivotY;
+
+                        // try
+                        // {
+                        //     string pivotString = animation.TagName.Split(':')[1].ToString();
+                        //     string[] pivotInfo = pivotString.Split(',');
+                        //     pivotX = Convert.ToInt32(pivotInfo[0]);
+                        //     pivotY = Convert.ToInt32(pivotInfo[1]);
+                        //     foundPivotInfo = true;
+                        // }
+                        // catch
+                        // {
+                        //     pivotX = 0;
+                        //     pivotY = 0;
+                        // }
+
+                        continue;
+                    }
+                }
                 AnimationClip animationClip = new AnimationClip();
                 animationClip.name = name + "_" + animation.TagName;
                 animationClip.frameRate = 25;
 
                 AseFileAnimationSettings importSettings = GetAnimationSettingFor(animSettings, animation);
                 importSettings.about = GetAnimationAbout(animation);
-
 
                 EditorCurveBinding editorBinding = new EditorCurveBinding();
                 editorBinding.path = "";
@@ -256,7 +276,19 @@ namespace AsepriteImporter
                 }
 
                 AnimationUtility.SetAnimationClipSettings(animationClip, settings);
+                // serialize our clips
                 ctx.AddObjectToAsset(animation.TagName, animationClip);
+                string outPath = ctx.assetPath;
+                // 
+                importSettings.animationClipPath = outPath;
+                
+                // put in another thread maybe?
+                // importSettings.animationClip = AseSerializer.SerializeToByteArray(animationClip);
+                // AnimationClip newTempAnimation = new AnimationClip();
+                // newTempAnimation = animationClip;
+                
+                //  UnityEditor.Unsupported.DuplicateGameObjectsUsingPasteboard();
+                // AssetDatabase.CopyAsset(outPath, "Assets/test.anim");
 
                 index++;
             }
@@ -301,6 +333,30 @@ namespace AsepriteImporter
 
             animationSettings.Add(new AseFileAnimationSettings(animation.TagName));
             return animationSettings[animationSettings.Count - 1];
+        }
+
+        public bool GetPivotFromFirstFrame(AssetImportContext ctx, AseFile aseFile, out Vector2Int pivot)
+        {
+            pivot = Vector2Int.zero;
+
+            var animations = aseFile.GetAnimations();
+            if(animations.Length <0)
+            {
+                return false;
+            }
+
+            try
+            {
+                string pivotString = animations[0].TagName.Split(':')[1].ToString();
+                string[] pivotInfo = pivotString.Split(',');
+                pivot.x = Convert.ToInt32(pivotInfo[0]);
+                pivot.y = Convert.ToInt32(pivotInfo[1]);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private string GetAnimationAbout(FrameTag animation)
