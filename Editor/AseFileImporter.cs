@@ -276,19 +276,10 @@ namespace AsepriteImporter
                 }
 
                 AnimationUtility.SetAnimationClipSettings(animationClip, settings);
-                // serialize our clips
+                // store our animation paths to unload later in editor
                 ctx.AddObjectToAsset(animation.TagName, animationClip);
-                string outPath = ctx.assetPath;
-                // 
-                importSettings.animationClipPath = outPath;
-                
-                // put in another thread maybe?
-                // importSettings.animationClip = AseSerializer.SerializeToByteArray(animationClip);
-                // AnimationClip newTempAnimation = new AnimationClip();
-                // newTempAnimation = animationClip;
-                
-                //  UnityEditor.Unsupported.DuplicateGameObjectsUsingPasteboard();
-                // AssetDatabase.CopyAsset(outPath, "Assets/test.anim");
+                importSettings.animationClipPath = ctx.assetPath;
+            
 
                 index++;
             }
