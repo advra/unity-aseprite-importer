@@ -26,6 +26,11 @@ namespace AsepriteImporter
         UIImage
     }
 
+    public static class Settings
+    {
+        public static string FOLDERNAME = "AseAssets";
+    }
+
     [ScriptedImporter(1, new []{ "ase", "aseprite" })]
     public class AseFileImporter : ScriptedImporter
     {
@@ -34,8 +39,6 @@ namespace AsepriteImporter
         [SerializeField] public Texture2D atlas;
         [SerializeField] public AseFileImportType importType;
         [SerializeField] public AseEditorBindType bindType;
-        // [SerializeField] public Sprite[] sprites;
-        // [SerializeField] public AnimationClip[] animationClips;
 
         public override void OnImportAsset(AssetImportContext ctx)
         {
@@ -277,8 +280,10 @@ namespace AsepriteImporter
 
                 AnimationUtility.SetAnimationClipSettings(animationClip, settings);
                 // store our animation paths to unload later in editor
-                ctx.AddObjectToAsset(animation.TagName, animationClip);
-                importSettings.animationClipPath = ctx.assetPath;
+                // ctx.AddObjectToAsset(animation.TagName, animationClip);
+                // importSettings.animationClipPath = ctx.assetPath;
+                var uniqueFileName = "Assets/" + Settings.FOLDERNAME + "/" + animation.TagName + ".anim";
+                AssetDatabase.CreateAsset(animationClip, uniqueFileName);
             
 
                 index++;

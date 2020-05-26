@@ -19,10 +19,14 @@ namespace AsepriteImporter
         private bool customSpritePivot = false;
         private Dictionary<string, bool> foldoutStates = new Dictionary<string, bool>();
 
+        private AseFileAnimationSettings[] fileAnimationSettings;
+        private AnimationClip[] animationClips;
+
         public override void OnEnable()
         {
             base.OnEnable();
             foldoutStates.Clear();
+            animationClips = null;
         }
 
 
@@ -122,19 +126,104 @@ namespace AsepriteImporter
             EditorGUILayout.Space();
             SerializedProperty animationSettingsArray = serializedObject.FindProperty("animationSettings");
             EditorGUILayout.PropertyField(serializedObject.FindProperty(textureSettings + "extrudeEdges"));
-
+            
             if (animationSettingsArray != null)
             {
+                
                 int arraySize = animationSettingsArray.arraySize;
+                
                 if (arraySize > 0)
                 {
                     EditorGUILayout.LabelField("Animation Options", EditorStyles.boldLabel);
                 }
 
-                for (int i = 0; i < arraySize; i++)
+                fileAnimationSettings = new AseFileAnimationSettings[arraySize];
+              
+                // load each anmation at the path
+                for(int i = 0; i < arraySize; i++)
                 {
-                    DrawAnimationSetting(animationSettingsArray.GetArrayElementAtIndex(i));
+                    SerializedProperty animationSettings = animationSettingsArray.GetArrayElementAtIndex(i);
+                    string animationName = animationSettings.FindPropertyRelative("animationName").stringValue;
+
+                    if (!foldoutStates.ContainsKey(animationName))
+                    {
+                        foldoutStates.Add(animationName, false);
+                    }
+
+                    fileAnimationSettings[i] = new AseFileAnimationSettings();
+                    fileAnimationSettings[i].animationName = animationName;
+                    // fileAnimationSettings[i].animationClipPath = animationSettings.FindPropertyRelative("animationClipPath").stringValue;
+                  
+
+                    if(animationClips == null)
+                    {
+                        animationClips = new AnimationClip[arraySize];
+                        string path = animationSettings.FindPropertyRelative("animationClipPath").stringValue;
+                        object[] data  = AssetDatabase.LoadAllAssetRepresentationsAtPath(path);
+                        
+
+                        for(int ii=0; ii < data.Length; ii++)
+                        {
+                            Debug.Log(data[ii]);
+                        }
+                    }
+                    
+
+                     // load each anmation at the path
+                    EditorGUILayout.HelpBox(fileAnimationSettings[i].animationClipPath+ "/" + animationName, MessageType.None);
+                    Debug.Log(fileAnimationSettings[i].animationClipPath + "/" + animationName);
+                    // AnimationClip animationClip = (AnimationClip) AssetDatabase.LoadAllAssetRepresentationsAtPath(fileAnimationSettings[i].animationClipPath, typeof(AnimationClip));
+                    // EditorGUILayout.ObjectField(animationClip, typeof(AnimationClip), false);
+                    
+                    EditorGUILayout.BeginVertical(GUI.skin.box);
+                    EditorGUI.indentLevel++;
+
+                    GUIStyle foldoutStyle = EditorStyles.foldout;
+                    FontStyle prevoiusFontStyle = foldoutStyle.fontStyle;
+                    foldoutStyle.fontStyle = FontStyle.Bold;
+
+
+                    if (foldoutStates[animationName] = EditorGUILayout.Foldout(foldoutStates[animationName],
+                        animationName, true, foldoutStyle))
+                    {
+                        EditorGUILayout.PropertyField(animationSettings.FindPropertyRelative("loopTime"));
+                        EditorGUILayout.HelpBox(animationSettings.FindPropertyRelative("about").stringValue, MessageType.None);
+
+                        // // load each anmation at the path
+                        // EditorGUILayout.HelpBox(fileAnimationSettings[i].animationClipPath+ "/" + animationName, MessageType.None);
+                        // Debug.Log(fileAnimationSettings[i].animationClipPath + "/" + animationName);
+                        // AnimationClip animationClip = (AnimationClip) AssetDatabase.LoadAssetAtPath(fileAnimationSettings[i].animationClipPath, typeof(AnimationClip));
+                        // EditorGUILayout.ObjectField(animationClip, typeof(AnimationClip), false);
+
+
+                        // create animation
+                        // AssetDatabase.CreateAsset(animationClip, "Assets/" + animationName);
+
+                        // EditorGUILayout.(animationClip, typeof(AnimationClip));
+                        // EditorGUILayout.PropertyField();
+                        // SerializedProperty animationClipPlayable = serializedObject.FindProperty("animationClipPlayable");
+
+                        // AnimationClip animationClip = animationClipPlayable.GetAnimationClip();
+                        // EditorGUILayout.PropertyField(animationClipPlayable)
+                        // AnimationClipPlayable animationClipPlayable = animationSettings.FindPropertyRelative("animationClipPlayable") as AnimationClipPlayable;
+                        
+                    }
+
+                    foldoutStyle.fontStyle = prevoiusFontStyle;
+
+                    EditorGUI.indentLevel--;
+                    EditorGUILayout.EndVertical();
+
+                    // animationPaths[i] = animationSettingsArray.GetArrayElementAtIndex(i).FindPropertyRelative("animationClipPath").stringValue;
+                    // EditorGUILayout.HelpBox(animationPaths[i]+ "/" + animationName, MessageType.None);
                 }
+
+                // string path = animationSettings.FindPropertyRelative("animationClipPath").stringValue;
+                // EditorGUILayout.HelpBox(path+ "/" + animationName, MessageType.None);
+                // Debug.Log(path+ "/" + animationName);
+                // AnimationClip animationClip = (AnimationClip) AssetDatabase.LoadAssetAtPath(path, typeof(AnimationClip));
+                // EditorGUILayout.ObjectField(animationClip, typeof(AnimationClip), false);
+                
             }
 
             if (importTypeProperty.intValue == (int) AseFileImportType.Tileset)
@@ -221,59 +310,6 @@ namespace AsepriteImporter
             {
                 pivotProperty.vector2Value = pivot;
             }
-        }
-
-
-        private void DrawAnimationSetting(SerializedProperty animationSettings)
-        {
-            string animationName = animationSettings.FindPropertyRelative("animationName").stringValue;
-            // AnimationClip animationClip = animationSettings.FindPropertyRelative("animationClip").stringValue;
-
-            if (animationName == null)
-                return;
-
-            if (!foldoutStates.ContainsKey(animationName))
-            {
-                foldoutStates.Add(animationName, false);
-            }
-
-            EditorGUILayout.BeginVertical(GUI.skin.box);
-            EditorGUI.indentLevel++;
-
-            GUIStyle foldoutStyle = EditorStyles.foldout;
-            FontStyle prevoiusFontStyle = foldoutStyle.fontStyle;
-            foldoutStyle.fontStyle = FontStyle.Bold;
-
-            if (foldoutStates[animationName] = EditorGUILayout.Foldout(foldoutStates[animationName],
-                animationName, true, foldoutStyle))
-            {
-                EditorGUILayout.PropertyField(animationSettings.FindPropertyRelative("loopTime"));
-                EditorGUILayout.HelpBox(animationSettings.FindPropertyRelative("about").stringValue, MessageType.None);
-
-                // load each anmation at the path
-                string path = animationSettings.FindPropertyRelative("animationClipPath").stringValue;
-                EditorGUILayout.HelpBox(path+ "/" + animationName, MessageType.None);
-                Debug.Log(path+ "/" + animationName);
-                AnimationClip animationClip = (AnimationClip) AssetDatabase.LoadAssetAtPath(path, typeof(AnimationClip));
-                EditorGUILayout.ObjectField(animationClip, typeof(AnimationClip), false);
-
-                // create animation
-                // AssetDatabase.CreateAsset(animationClip, "Assets/" + animationName);
-
-                // EditorGUILayout.(animationClip, typeof(AnimationClip));
-                // EditorGUILayout.PropertyField();
-                // SerializedProperty animationClipPlayable = serializedObject.FindProperty("animationClipPlayable");
-
-                // AnimationClip animationClip = animationClipPlayable.GetAnimationClip();
-                // EditorGUILayout.PropertyField(animationClipPlayable)
-                // AnimationClipPlayable animationClipPlayable = animationSettings.FindPropertyRelative("animationClipPlayable") as AnimationClipPlayable;
-                
-            }
-
-            foldoutStyle.fontStyle = prevoiusFontStyle;
-
-            EditorGUI.indentLevel--;
-            EditorGUILayout.EndVertical();
         }
 
         private int GetSpritePivotOptionIndex(Vector2 spritePivot)
