@@ -42,6 +42,12 @@ namespace AsepriteImporter
 
         public override void OnImportAsset(AssetImportContext ctx)
         {
+
+            // if(!AssetDatabase.IsValidFolder(Settings.FOLDERNAME))
+            // {
+            //     AssetDatabase.CreateFolder("Assets", Settings.FOLDERNAME);
+            // }
+
             name = GetFileName(ctx.assetPath);
 
             AseFile aseFile = ReadAseFile(ctx.assetPath);
@@ -66,7 +72,7 @@ namespace AsepriteImporter
             atlas.name = "Texture";
 
             ctx.AddObjectToAsset("Texture", atlas);
-
+            AssetDatabase.AddObjectToAsset(atlas, "Assets/" + Settings.FOLDERNAME + name + ".spriteatlas");
             ctx.SetMainObject(atlas);
 
             switch (importType)
@@ -126,7 +132,7 @@ namespace AsepriteImporter
                         Vector4.zero, textureSettings.generatePhysics);
                     sprite.name = string.Format("{0}_{1}", name, index);
 
-                    ctx.AddObjectToAsset(sprite.name, sprite);
+                    // ctx.AddObjectToAsset(sprite.name, sprite);
 
                     index++;
                 }
@@ -280,10 +286,31 @@ namespace AsepriteImporter
 
                 AnimationUtility.SetAnimationClipSettings(animationClip, settings);
                 // store our animation paths to unload later in editor
-                // ctx.AddObjectToAsset(animation.TagName, animationClip);
+                ctx.AddObjectToAsset(animation.TagName, animationClip);
+
+                // string filePath = Path.Combine(Directory.GetCurrentDirectory(), assetPath);
+                // filePath = filePath.Replace("/", "\\");
+                // string fileText = File.ReadAllText(filePath);
+                // fileText = fileText.Replace("m_IsReadable: 0", "m_IsReadable: 1");
+                // File.WriteAllText(filePath, fileText);
+                File.SetAttributes(assetPath,File.GetAttributes(assetPath) & ~FileAttributes.ReadOnly);
+                AssetDatabase.Refresh();
+
+
+                // ctx.AddObjectToAsset(animation.TagName, UnityEngine.Object.Instantiate(animationClip));
+                // AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(animationClip));
+
+                // AssetDatabase.AddObjectToAsset(UnityEngine.Object.Instantiate(animationClip), atlas);
+                // AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(animationClip));
                 // importSettings.animationClipPath = ctx.assetPath;
-                var uniqueFileName = "Assets/" + Settings.FOLDERNAME + "/" + animation.TagName + ".anim";
-                AssetDatabase.CreateAsset(animationClip, uniqueFileName);
+                // string guid = AssetDatabase.CreateFolder("Assets", "My Folder");
+                // string newFolderPath = AssetDatabase.GUIDToAssetPath(guid);
+
+                
+
+                // AssetDatabase.CreateAsset(animationClip, "Assets/" + animation.TagName);
+                // var uniqueFileName = "Assets/" + Settings.FOLDERNAME + "/" + animation.TagName + ".anim";
+                // AssetDatabase.CreateAsset(animationClip, uniqueFileName);
             
 
                 index++;

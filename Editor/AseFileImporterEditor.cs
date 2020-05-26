@@ -20,13 +20,13 @@ namespace AsepriteImporter
         private Dictionary<string, bool> foldoutStates = new Dictionary<string, bool>();
 
         private AseFileAnimationSettings[] fileAnimationSettings;
-        private AnimationClip[] animationClips;
+        private List<AnimationClip> animationClips = new List<AnimationClip>();
 
         public override void OnEnable()
         {
             base.OnEnable();
             foldoutStates.Clear();
-            animationClips = null;
+            animationClips.Clear();
         }
 
 
@@ -157,21 +157,28 @@ namespace AsepriteImporter
 
                     if(animationClips == null)
                     {
-                        animationClips = new AnimationClip[arraySize];
+                        animationClips = new List<AnimationClip>();
                         string path = animationSettings.FindPropertyRelative("animationClipPath").stringValue;
-                        object[] data  = AssetDatabase.LoadAllAssetRepresentationsAtPath(path);
+                        object[] allAssets  = AssetDatabase.LoadAllAssetRepresentationsAtPath(path);
                         
 
-                        for(int ii=0; ii < data.Length; ii++)
+                        foreach (var asset in allAssets)
                         {
-                            Debug.Log(data[ii]);
+                            if(asset is AnimationClip clip)
+                            {
+                               Debug.Log(clip);
+                               if(!animationClips.Contains(clip))
+                               {
+                                   animationClips.Add(clip);
+                               }
+                            }
                         }
                     }
                     
 
                      // load each anmation at the path
                     EditorGUILayout.HelpBox(fileAnimationSettings[i].animationClipPath+ "/" + animationName, MessageType.None);
-                    Debug.Log(fileAnimationSettings[i].animationClipPath + "/" + animationName);
+                    // Debug.Log(fileAnimationSettings[i].animationClipPath + "/" + animationName);
                     // AnimationClip animationClip = (AnimationClip) AssetDatabase.LoadAllAssetRepresentationsAtPath(fileAnimationSettings[i].animationClipPath, typeof(AnimationClip));
                     // EditorGUILayout.ObjectField(animationClip, typeof(AnimationClip), false);
                     
@@ -193,20 +200,8 @@ namespace AsepriteImporter
                         // EditorGUILayout.HelpBox(fileAnimationSettings[i].animationClipPath+ "/" + animationName, MessageType.None);
                         // Debug.Log(fileAnimationSettings[i].animationClipPath + "/" + animationName);
                         // AnimationClip animationClip = (AnimationClip) AssetDatabase.LoadAssetAtPath(fileAnimationSettings[i].animationClipPath, typeof(AnimationClip));
-                        // EditorGUILayout.ObjectField(animationClip, typeof(AnimationClip), false);
-
-
-                        // create animation
-                        // AssetDatabase.CreateAsset(animationClip, "Assets/" + animationName);
-
-                        // EditorGUILayout.(animationClip, typeof(AnimationClip));
-                        // EditorGUILayout.PropertyField();
-                        // SerializedProperty animationClipPlayable = serializedObject.FindProperty("animationClipPlayable");
-
-                        // AnimationClip animationClip = animationClipPlayable.GetAnimationClip();
-                        // EditorGUILayout.PropertyField(animationClipPlayable)
-                        // AnimationClipPlayable animationClipPlayable = animationSettings.FindPropertyRelative("animationClipPlayable") as AnimationClipPlayable;
-                        
+                        //TODO: The order is not guaranteed when reading from LoadAllAssetRepresentationsAtPath.
+                        EditorGUILayout.ObjectField(animationClips[i], typeof(AnimationClip), false);
                     }
 
                     foldoutStyle.fontStyle = prevoiusFontStyle;
