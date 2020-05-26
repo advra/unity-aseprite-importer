@@ -23,6 +23,12 @@ namespace AsepriteImporter
         UIImage
     }
 
+    public static class Settings
+    {
+        public static string COMMENT_TAGS = "//";
+    }
+
+
     [ScriptedImporter(1, new []{ "ase", "aseprite" })]
     public class AseFileImporter : ScriptedImporter
     {
@@ -172,7 +178,7 @@ namespace AsepriteImporter
             {
                  FrameTag animation = animations[animationIndex];
 
-                 if(animation.TagName.Substring(0,2) == "//")
+                 if(animation.TagName.Substring(0,2) == Settings.COMMENT_TAGS)
                 {
                     continue;
                 }

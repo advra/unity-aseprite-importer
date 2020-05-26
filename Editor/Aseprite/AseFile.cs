@@ -85,6 +85,11 @@ namespace Aseprite
 
             for (int i = 0; i < layers.Count; i++)
             {
+                if(layers[i].LayerName.Substring(0,2) == AsepriteImporter.Settings.COMMENT_TAGS)
+                {
+                    continue;
+                }
+
                 List<Texture2D> layerFrames = GetLayerTexture(i, layers[i]);
 
                 if (layerFrames.Count > 0)
@@ -129,6 +134,8 @@ namespace Aseprite
 
                 for (int i = 0; i < cels.Count; i++)
                 {
+                    bool commentedOut = layers[i].LayerName.Substring(0,2) == AsepriteImporter.Settings.COMMENT_TAGS;
+
                     if (cels[i].LayerIndex != layerIndex)
                         continue;
 
@@ -141,13 +148,13 @@ namespace Aseprite
                     while (parent != null)
                     {
                         visibility &= parent.Visible;
-                        if (visibility == false)
+                        if (visibility == false || commentedOut)
                             break;
 
                         parent = GetParentLayer(parent);
                     }
 
-                    if (visibility == false || layer.LayerType == LayerType.Group)
+                    if (visibility == false || layer.LayerType == LayerType.Group || commentedOut)
                         continue;
 
                     textures.Add(GetTextureFromCel(cels[i]));
