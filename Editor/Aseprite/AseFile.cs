@@ -179,6 +179,8 @@ namespace Aseprite
             for (int i = 0; i < cels.Count; i++)
             {
                 LayerChunk layer = layers[cels[i].LayerIndex];
+                if(layers[i].LayerName.Substring(0,2) == AsepriteImporter.Settings.COMMENT_TAGS)
+                    continue;
 
                 LayerBlendMode blendMode = layer.BlendMode;
                 float opacity = Mathf.Min(layer.Opacity / 255f, cels[i].Opacity / 255f);
