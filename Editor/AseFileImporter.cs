@@ -166,10 +166,17 @@ namespace AsepriteImporter
             if (animationSettings != null)
                 RemoveUnusedAnimationSettings(animSettings, animations);
 
-            int index = 0;
+            // int index = 0;
 
-            foreach (var animation in animations)
+            for (int animationIndex = 0; animationIndex < animations.Length; animationIndex++)
             {
+                 FrameTag animation = animations[animationIndex];
+
+                 if(animation.TagName.Substring(0,2) == "//")
+                {
+                    continue;
+                }
+
                 AnimationClip animationClip = new AnimationClip();
                 animationClip.name = name + "_" + animation.TagName;
                 animationClip.frameRate = 25;
@@ -258,7 +265,7 @@ namespace AsepriteImporter
                 AnimationUtility.SetAnimationClipSettings(animationClip, settings);
                 ctx.AddObjectToAsset(animation.TagName, animationClip);
 
-                index++;
+                // index++;
             }
 
             animationSettings = animSettings.ToArray();
