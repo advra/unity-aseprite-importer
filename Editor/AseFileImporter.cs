@@ -25,7 +25,8 @@ namespace AsepriteImporter
 
     public static class Settings
     {
-        public static string COMMENT_TAGS = "//";
+        public static string COMMENT_TAGS = "//";       // Used to mark layers and animation tags as do not import
+        public static string LOOP_TAG_START = "-";        // Use at the beginning of an animation tag to mark as Loop Once
     }
 
 
@@ -184,11 +185,13 @@ namespace AsepriteImporter
                 }
 
                 AnimationClip animationClip = new AnimationClip();
-                animationClip.name = name + "_" + animation.TagName;
-                animationClip.frameRate = 25;
-
+        
                 AseFileAnimationSettings importSettings = GetAnimationSettingFor(animSettings, animation);
                 importSettings.about = GetAnimationAbout(animation);
+                
+
+                animationClip.name = name + "_" + animation.TagName;
+                animationClip.frameRate = 25;
 
 
                 EditorCurveBinding editorBinding = new EditorCurveBinding();
@@ -312,7 +315,19 @@ namespace AsepriteImporter
                     return animationSettings[i];
             }
 
-            animationSettings.Add(new AseFileAnimationSettings(animation.TagName));
+            AseFileAnimationSettings aseFileAnimationSetting = new AseFileAnimationSettings();
+           
+            Debug.Log("Before: " + animation.TagName);
+            Debug.Log("checking " + animation.TagName.Substring(0, 1));
+            if(animation.TagName.Substring(0,1) ==Settings.LOOP_TAG_START)
+            {
+                animation.TagName = animation.TagName.Substring(1,animation.TagName.Length-1);
+                aseFileAnimationSetting.loopTime = false;  
+            }
+
+            Debug.Log("After: " + animation.TagName);
+            aseFileAnimationSetting.animationName = animation.TagName;
+            animationSettings.Add(aseFileAnimationSetting);
             return animationSettings[animationSettings.Count - 1];
         }
 

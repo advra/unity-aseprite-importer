@@ -21,7 +21,7 @@ namespace Aseprite.Chunks
         private byte[] ForFuture { get; set; } // 8 Bytes
         public Color TagColor { get; set; } // 3 Bytes
         // 1 Extra Byte
-        public string TagName { get; private set; }
+        public string TagName { get; set; }
 
         public FrameTag(BinaryReader reader)
         {

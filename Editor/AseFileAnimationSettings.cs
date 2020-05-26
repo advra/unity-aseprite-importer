@@ -10,10 +10,11 @@ namespace AsepriteImporter
         {
         }
 
-        public AseFileAnimationSettings(string name)
-        {
-            animationName = name;
-        }
+        // public AseFileAnimationSettings(string name, bool loop = true)
+        // {
+        //     animationName = name;
+        //     loopTime = loop;
+        // }
 
         [SerializeField] public string animationName;
         [SerializeField] public bool loopTime = true;
