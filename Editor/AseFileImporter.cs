@@ -48,6 +48,7 @@ namespace AsepriteImporter
             //     AssetDatabase.CreateFolder("Assets", Settings.FOLDERNAME);
             // }
 
+
             name = GetFileName(ctx.assetPath);
 
             AseFile aseFile = ReadAseFile(ctx.assetPath);
@@ -166,6 +167,8 @@ namespace AsepriteImporter
 
             if (animations.Length <= 0)
                 return;
+            
+            
 
             if (animationSettings != null)
                 RemoveUnusedAnimationSettings(animSettings, animations);
@@ -205,6 +208,7 @@ namespace AsepriteImporter
                 animationClip.frameRate = 25;
 
                 AseFileAnimationSettings importSettings = GetAnimationSettingFor(animSettings, animation);
+
                 importSettings.about = GetAnimationAbout(animation);
 
                 EditorCurveBinding editorBinding = new EditorCurveBinding();
@@ -283,35 +287,33 @@ namespace AsepriteImporter
                     animationClip.wrapMode = WrapMode.Once;
                     settings.loopTime = false;
                 }
+                
+                // store our animation paths to unload later in editor
+                // ctx.AddObjectToAsset(animation.TagName, animationClip);
+                AnimationEvent[] oldEvents;
+                // if anim file exists, save all event data
+                string path = "Assets/" + animation.TagName + ".anim";
+                UnityEngine.Object obj = AssetDatabase.LoadAssetAtPath(path, typeof(AnimationClip));
+                if(obj != null)
+                {
+                    if(obj is AnimationClip clip)
+                    {
+                        oldEvents = AnimationUtility.GetAnimationEvents(clip);
+                        AnimationUtility.SetAnimationEvents(animationClip, oldEvents);
+                        settings = AnimationUtility.GetAnimationClipSettings(clip);
+                        AssetDatabase.DeleteAsset(path);
+                    }
+                }
 
                 AnimationUtility.SetAnimationClipSettings(animationClip, settings);
-                // store our animation paths to unload later in editor
-                ctx.AddObjectToAsset(animation.TagName, animationClip);
-
-                // string filePath = Path.Combine(Directory.GetCurrentDirectory(), assetPath);
-                // filePath = filePath.Replace("/", "\\");
-                // string fileText = File.ReadAllText(filePath);
-                // fileText = fileText.Replace("m_IsReadable: 0", "m_IsReadable: 1");
-                // File.WriteAllText(filePath, fileText);
-                File.SetAttributes(assetPath,File.GetAttributes(assetPath) & ~FileAttributes.ReadOnly);
-                AssetDatabase.Refresh();
-
-
-                // ctx.AddObjectToAsset(animation.TagName, UnityEngine.Object.Instantiate(animationClip));
-                // AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(animationClip));
-
-                // AssetDatabase.AddObjectToAsset(UnityEngine.Object.Instantiate(animationClip), atlas);
-                // AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(animationClip));
-                // importSettings.animationClipPath = ctx.assetPath;
-                // string guid = AssetDatabase.CreateFolder("Assets", "My Folder");
-                // string newFolderPath = AssetDatabase.GUIDToAssetPath(guid);
+                AssetDatabase.CreateAsset(animationClip, path); 
 
                 
+                // add animations
+                // AssetDatabase.CreateAsset(animationClip, "Assets/" + animation.TagName + ".anim");              // add animation to its own anim file (writable)
+                // ctx.AddObjectToAsset(animation.TagName, animationClip);                                      // add animation files to context (read only)
 
-                // AssetDatabase.CreateAsset(animationClip, "Assets/" + animation.TagName);
-                // var uniqueFileName = "Assets/" + Settings.FOLDERNAME + "/" + animation.TagName + ".anim";
-                // AssetDatabase.CreateAsset(animationClip, uniqueFileName);
-            
+                
 
                 index++;
             }
