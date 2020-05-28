@@ -26,7 +26,7 @@ namespace AsepriteImporter
     public static class Settings
     {
         public static string COMMENT_TAGS = "//";       // Used to mark layers and animation tags as do not import
-        public static string LOOP_TAG_START = "-";        // Use at the beginning of an animation tag to mark as Loop Once
+        public static string LOOP_TAG_START = "#";        // Use at the beginning of an animation tag to mark as Loop Once
     }
 
 
